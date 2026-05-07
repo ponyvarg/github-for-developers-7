@@ -368,50 +368,173 @@ a {
 .toggle {
   position: relative;
   width: 100%;
-  height: 28px;
+  height: 30px;
   border-radius: 999px;
-  background: var(--track);
+  background: var(--purple);
   overflow: hidden;
   border: none;
   padding: 0;
   cursor: pointer;
   display: block;
+  transition: background-color 320ms ease;
+}
+.toggle.mate {
+  background: var(--green-deep);
 }
 .toggle:focus-visible {
   outline: 2px solid var(--purple);
   outline-offset: 2px;
 }
-.toggle .toggle-fill {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 50%;
-  background: var(--purple);
-  transition: transform 260ms cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 220ms ease;
-}
-.toggle.mate .toggle-fill {
-  transform: translateX(100%);
-  background: var(--green-deep);
-}
 .toggle .toggle-knob {
   position: absolute;
   top: 50%;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-  transform: translate(-50%, -50%);
-  left: 25%;
-  transition: left 260ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  transform: translateY(-50%);
+  left: 3px;
+  transition:
+    left 360ms cubic-bezier(0.34, 1.6, 0.4, 1),
+    box-shadow 220ms ease,
+    width 220ms cubic-bezier(0.34, 1.6, 0.4, 1);
+  z-index: 2;
 }
 .toggle.mate .toggle-knob {
-  left: 75%;
+  left: calc(100% - 27px);
 }
 .toggle:active {
   filter: brightness(1.05);
+}
+
+/* Trail behind the knob during smash */
+.toggle .toggle-trail {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  width: 0;
+  transform: translateY(-50%);
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.85) 100%
+  );
+  border-radius: 999px;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 1;
+}
+.toggle.mine .toggle-trail {
+  right: 3px;
+  background: linear-gradient(
+    to left,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.85) 100%
+  );
+}
+.toggle.mate .toggle-trail {
+  left: 3px;
+}
+.toggle.smashing .toggle-trail {
+  animation: trail-fade 360ms ease-out;
+}
+@keyframes trail-fade {
+  0% {
+    width: 0;
+    opacity: 0;
+  }
+  35% {
+    width: calc(100% - 30px);
+    opacity: 1;
+  }
+  100% {
+    width: calc(100% - 30px);
+    opacity: 0;
+  }
+}
+
+/* The knob squashes during the smash, then settles */
+.toggle.smashing .toggle-knob {
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.45),
+    0 0 18px rgba(255, 255, 255, 0.8);
+  animation: knob-squash 360ms cubic-bezier(0.34, 1.6, 0.4, 1);
+}
+@keyframes knob-squash {
+  0% {
+    width: 24px;
+  }
+  40% {
+    width: 38px;
+  }
+  100% {
+    width: 24px;
+  }
+}
+
+/* Brief brightness flash on the bar itself */
+.toggle.smashing {
+  animation: bar-flash 360ms ease;
+}
+@keyframes bar-flash {
+  0%,
+  100% {
+    filter: brightness(1) saturate(1);
+  }
+  35% {
+    filter: brightness(1.35) saturate(1.2);
+  }
+}
+
+/* SMASH! pop text */
+.smash-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  font-size: 12px;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  animation: smash-pop 700ms ease-out forwards;
+  z-index: 3;
+  white-space: nowrap;
+}
+@keyframes smash-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6) rotate(-6deg);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -110%) scale(1.25) rotate(-3deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -200%) scale(1) rotate(0deg);
+  }
+}
+
+/* Score bump animation */
+.players .score.flash {
+  animation: score-bump 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.players .score.flash.mate {
+  color: var(--orange);
+}
+@keyframes score-bump {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Edit list */
