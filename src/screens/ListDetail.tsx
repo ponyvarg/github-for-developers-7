@@ -56,8 +56,6 @@ export default function ListDetail({ listId, onBack, onEdit }: Props) {
     );
   }
 
-  const nextForMe = list.tasks.find(isMyTurn);
-
   const flip = (t: Task) => {
     const mine = isMyTurn(t);
     const by: PlayerKey = mine ? "me" : "mate";
@@ -118,20 +116,6 @@ export default function ListDetail({ listId, onBack, onEdit }: Props) {
           })
         )}
 
-        {list.tasks.length > 0 && (
-          <div className="task serve">
-            <div className="label">
-              {nextForMe ? nextForMe.name : `Waiting for ${list.mateName}…`}
-            </div>
-            <button
-              className="btn"
-              disabled={!nextForMe}
-              onClick={() => nextForMe && flip(nextForMe)}
-            >
-              {nextForMe ? "Smash!" : "Waiting for smash"}
-            </button>
-          </div>
-        )}
       </div>
 
       {toast && <div className="toast">{toast}</div>}
