@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Avatar from "../components/Avatar";
-import { actions, taskBalance, useStore } from "../store";
+import { actions, useStore } from "../store";
 import type { Task } from "../types";
 
 type Props = {
@@ -9,19 +9,13 @@ type Props = {
   onEdit: () => void;
 };
 
+const isMyTurn = (t: Task) => t.lastServedBy !== "me";
+
 export default function ListDetail({ listId, onBack, onEdit }: Props) {
   const { lists, account } = useStore();
   const list = lists.find((l) => l.id === listId);
   const myName = account?.name ?? "You";
   const [toast, setToast] = useState<string | null>(null);
-  const [serveIndex, setServeIndex] = useState(0);
-
-  const serveCandidates = useMemo<Task[]>(() => {
-    if (!list) return [];
-    // Tasks that mate served last (or never), so it's "your" turn
-    const yourTurn = list.tasks.filter((t) => t.lastServedBy !== "me");
-    return yourTurn.length > 0 ? yourTurn : list.tasks;
-  }, [list]);
 
   useEffect(() => {
     if (!toast) return;
@@ -48,7 +42,14 @@ export default function ListDetail({ listId, onBack, onEdit }: Props) {
     );
   }
 
-  const serveTask = serveCandidates[serveIndex % Math.max(serveCandidates.length, 1)];
+  const nextForMe = list.tasks.find(isMyTurn);
+
+  const flip = (t: Task) => {
+    const mine = isMyTurn(t);
+    const by = mine ? "me" : "mate";
+    actions.serve(list.id, t.id, by);
+    setToast(mine ? `Served — ${t.name}` : `${list.mateName} served back`);
+  };
 
   return (
     <div className="screen">
@@ -80,36 +81,36 @@ export default function ListDetail({ listId, onBack, onEdit }: Props) {
           </p>
         ) : (
           list.tasks.map((t) => {
-            const pos = taskBalance(t) * 100;
-            const greenSide = t.lastServedBy === "me"; // recently your turn => mate's lead, shown green-ish
+            const mine = isMyTurn(t);
             return (
               <div className="task" key={t.id}>
                 <div className="label">{t.name}</div>
-                <div
-                  className={`bar ${greenSide ? "green" : ""}`}
-                  style={{ ["--pos" as string]: `${pos}%` }}
-                  aria-label={`${t.name} balance`}
+                <button
+                  type="button"
+                  className={`toggle ${mine ? "mine" : "mate"}`}
+                  onClick={() => flip(t)}
+                  aria-pressed={!mine}
+                  aria-label={`${t.name} — ${mine ? "your serve" : `${list.mateName}'s serve`}`}
                 >
-                  <div className="fill-left" />
-                  <div className="knob" />
-                </div>
+                  <span className="toggle-fill" />
+                  <span className="toggle-knob" />
+                </button>
               </div>
             );
           })
         )}
 
-        {serveTask && (
+        {list.tasks.length > 0 && (
           <div className="task serve">
-            <div className="label">{serveTask.name}</div>
+            <div className="label">
+              {nextForMe ? nextForMe.name : `Waiting for ${list.mateName}…`}
+            </div>
             <button
               className="btn"
-              onClick={() => {
-                actions.serve(list.id, serveTask.id, "me");
-                setToast(`Served! ${serveTask.name}`);
-                setServeIndex((i) => i + 1);
-              }}
+              disabled={!nextForMe}
+              onClick={() => nextForMe && flip(nextForMe)}
             >
-              Serve!
+              {nextForMe ? "Serve!" : "Waiting for serve"}
             </button>
           </div>
         )}

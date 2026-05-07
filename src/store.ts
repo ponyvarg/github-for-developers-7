@@ -193,23 +193,3 @@ function updateList(
   };
 }
 
-// Compute a 0..1 position representing the player's relative load. 0.5 = balanced.
-// We blend per-task meCount/mateCount with a recency bias from lastServedBy.
-export function taskBalance(t: Task): number {
-  const total = t.meCount + t.mateCount;
-  if (total === 0) {
-    if (t.lastServedBy === "me") return 0.7;
-    if (t.lastServedBy === "mate") return 0.3;
-    return 0.5;
-  }
-  // Position closer to 1 means "me" has done more recently/more often.
-  const ratio = t.meCount / total; // 0..1
-  // Slight nudge toward whoever served last to reflect recency.
-  const recency = t.lastServedBy === "me" ? 0.05 : t.lastServedBy === "mate" ? -0.05 : 0;
-  const pos = clamp01(ratio + recency);
-  return pos;
-}
-
-function clamp01(v: number): number {
-  return Math.max(0.05, Math.min(0.95, v));
-}
