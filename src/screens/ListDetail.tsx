@@ -16,13 +16,19 @@ export default function ListDetail({ listId, onBack, onEdit }: Props) {
   const list = lists.find((l) => l.id === listId);
   const myName = account?.name ?? "You";
   const [toast, setToast] = useState<string | null>(null);
+  const [toastClosing, setToastClosing] = useState(false);
   const [smashId, setSmashId] = useState<string | null>(null);
   const [scoreFlash, setScoreFlash] = useState<PlayerKey | null>(null);
 
   useEffect(() => {
     if (!toast) return;
-    const id = setTimeout(() => setToast(null), 1500);
-    return () => clearTimeout(id);
+    setToastClosing(false);
+    const closeAt = setTimeout(() => setToastClosing(true), 2200);
+    const dropAt = setTimeout(() => setToast(null), 2500);
+    return () => {
+      clearTimeout(closeAt);
+      clearTimeout(dropAt);
+    };
   }, [toast]);
 
   useEffect(() => {
@@ -118,7 +124,25 @@ export default function ListDetail({ listId, onBack, onEdit }: Props) {
 
       </div>
 
-      {toast && <div className="toast">{toast}</div>}
+      {toast && (
+        <div
+          className={`ios-notif ${toastClosing ? "closing" : ""}`}
+          role="status"
+          aria-live="polite"
+        >
+          <div className="ios-notif-icon" aria-hidden>
+            pp
+          </div>
+          <div className="ios-notif-body">
+            <div className="ios-notif-row">
+              <strong className="ios-notif-app">Ping Pong</strong>
+              <span className="ios-notif-time">now</span>
+            </div>
+            <div className="ios-notif-msg">{toast}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
