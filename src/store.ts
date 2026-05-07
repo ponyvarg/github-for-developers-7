@@ -18,11 +18,11 @@ const seededDemo = (name: string): AppState => ({
       meScore: 1,
       mateScore: 3,
       tasks: [
-        { id: id(), name: "Tvätta", lastServedBy: "mate", meCount: 0, mateCount: 2 },
-        { id: id(), name: "Gå ut med soporna", lastServedBy: "mate", meCount: 1, mateCount: 1 },
-        { id: id(), name: "Dammsuga", lastServedBy: "me", meCount: 1, mateCount: 0 },
-        { id: id(), name: "Mata katten", lastServedBy: null, meCount: 0, mateCount: 0 },
-        { id: id(), name: "Mata grannens jobbiga katt", lastServedBy: null, meCount: 0, mateCount: 0 },
+        { id: id(), name: "Do laundry", lastServedBy: "mate", meCount: 0, mateCount: 2 },
+        { id: id(), name: "Take out the trash", lastServedBy: "mate", meCount: 1, mateCount: 1 },
+        { id: id(), name: "Vacuum", lastServedBy: "me", meCount: 1, mateCount: 0 },
+        { id: id(), name: "Feed the cat", lastServedBy: null, meCount: 0, mateCount: 0 },
+        { id: id(), name: "Feed the neighbour's annoying cat", lastServedBy: null, meCount: 0, mateCount: 0 },
       ],
     },
     {

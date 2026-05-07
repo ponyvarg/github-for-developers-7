@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Avatar from "../components/Avatar";
 import { actions, useStore } from "../store";
-import type { Task } from "../types";
+import type { PlayerKey, Task } from "../types";
 
 type Props = {
   listId: string;
@@ -16,12 +16,26 @@ export default function ListDetail({ listId, onBack, onEdit }: Props) {
   const list = lists.find((l) => l.id === listId);
   const myName = account?.name ?? "You";
   const [toast, setToast] = useState<string | null>(null);
+  const [smashId, setSmashId] = useState<string | null>(null);
+  const [scoreFlash, setScoreFlash] = useState<PlayerKey | null>(null);
 
   useEffect(() => {
     if (!toast) return;
     const id = setTimeout(() => setToast(null), 1500);
     return () => clearTimeout(id);
   }, [toast]);
+
+  useEffect(() => {
+    if (!smashId) return;
+    const id = setTimeout(() => setSmashId(null), 700);
+    return () => clearTimeout(id);
+  }, [smashId]);
+
+  useEffect(() => {
+    if (!scoreFlash) return;
+    const id = setTimeout(() => setScoreFlash(null), 600);
+    return () => clearTimeout(id);
+  }, [scoreFlash]);
 
   if (!list) {
     return (
@@ -46,9 +60,11 @@ export default function ListDetail({ listId, onBack, onEdit }: Props) {
 
   const flip = (t: Task) => {
     const mine = isMyTurn(t);
-    const by = mine ? "me" : "mate";
+    const by: PlayerKey = mine ? "me" : "mate";
     actions.serve(list.id, t.id, by);
-    setToast(mine ? `Served — ${t.name}` : `${list.mateName} served back`);
+    setSmashId(t.id);
+    setScoreFlash(by);
+    setToast(mine ? `Smashed — ${t.name}` : `${list.mateName} smashed back`);
   };
 
   return (
@@ -69,7 +85,7 @@ export default function ListDetail({ listId, onBack, onEdit }: Props) {
       <div className="screen-body">
         <div className="players">
           <Avatar name={myName} variant="me" size="lg" />
-          <div className="score">
+          <div className={`score ${scoreFlash ? `flash ${scoreFlash}` : ""}`}>
             {list.meScore} - {list.mateScore}
           </div>
           <Avatar name={list.mateName} variant="mate" size="lg" />
@@ -82,18 +98,20 @@ export default function ListDetail({ listId, onBack, onEdit }: Props) {
         ) : (
           list.tasks.map((t) => {
             const mine = isMyTurn(t);
+            const smashing = smashId === t.id;
             return (
               <div className="task" key={t.id}>
                 <div className="label">{t.name}</div>
                 <button
                   type="button"
-                  className={`toggle ${mine ? "mine" : "mate"}`}
+                  className={`toggle ${mine ? "mine" : "mate"} ${smashing ? "smashing" : ""}`}
                   onClick={() => flip(t)}
                   aria-pressed={!mine}
-                  aria-label={`${t.name} — ${mine ? "your serve" : `${list.mateName}'s serve`}`}
+                  aria-label={`${t.name} — ${mine ? "your smash" : `${list.mateName}'s smash`}`}
                 >
-                  <span className="toggle-fill" />
                   <span className="toggle-knob" />
+                  <span className="toggle-trail" aria-hidden />
+                  {smashing && <span className="smash-text">SMASH!</span>}
                 </button>
               </div>
             );
@@ -110,7 +128,7 @@ export default function ListDetail({ listId, onBack, onEdit }: Props) {
               disabled={!nextForMe}
               onClick={() => nextForMe && flip(nextForMe)}
             >
-              {nextForMe ? "Serve!" : "Waiting for serve"}
+              {nextForMe ? "Smash!" : "Waiting for smash"}
             </button>
           </div>
         )}
